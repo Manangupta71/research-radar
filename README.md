@@ -1,7 +1,7 @@
 "# ResearchRadar" 
 ## Motivation
 
-Keyword search on arXiv tells you what exists — it doesn't tell you what's missing. As someone working across research communities, I noticed researchers often struggle to identify *where the white spaces are* in a field before starting new work. ResearchRadar is an attempt to make that gap visible, automatically — using semantic embeddings rather than keyword frequency, so proximity in meaning is what drives the analysis, not surface-level term matching.
+Keyword search on arXiv tells you what exists, it doesn't tell you what's missing. As someone working across research communities, I noticed researchers often struggle to identify *where the white spaces are* in a field before starting new work. ResearchRadar is an attempt to make that gap visible, automatically using semantic embeddings rather than keyword frequency, so proximity in meaning is what drives the analysis, not surface-level term matching.
 
 ---
 
