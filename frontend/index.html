@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ResearchRadar — Find the gaps</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream: #f7f3ee;
+      --warm-white: #fdfaf7;
+      --ink: #1c1814;
+      --ink-light: #4a3f35;
+      --ink-muted: #9c8c7e;
+      --rust: #c0522a;
+      --rust-light: #e8a882;
+      --rust-pale: #f5e6de;
+      --sage: #6b7c5e;
+      --sage-pale: #e8ede4;
+      --border: #e2d9cf;
+      --shadow: 0 2px 20px rgba(28,24,20,0.08);
+      --shadow-lg: 0 8px 40px rgba(28,24,20,0.12);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    /* Subtle grain texture */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.4;
+    }
+
+    /* ── HEADER ── */
+    header {
+      padding: 2rem 2.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      background: var(--warm-white);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      text-decoration: none;
+    }
+
+    .logo-mark {
+      width: 32px;
+      height: 32px;
+      background: var(--ink);
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      position: relative;
+    }
+
+    .logo-mark::after {
+      content: '';
+      width: 10px;
+      height: 10px;
+      border: 2px solid var(--rust-light);
+      border-radius: 50%;
+      position: absolute;
+    }
+
+    .logo-mark::before {
+      content: '';
+      width: 18px;
+      height: 18px;
+      border: 1.5px solid rgba(255,255,255,0.2);
+      border-radius: 50%;
+      position: absolute;
+    }
+
+    .logo-text {
+      font-family: 'Lora', serif;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+    }
+
+    .logo-tagline {
+      font-size: 0.7rem;
+      color: var(--ink-muted);
+      font-weight: 300;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 5rem 2rem 3rem;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-eyebrow {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 500;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--rust);
+      background: var(--rust-pale);
+      padding: 0.35rem 0.85rem;
+      border-radius: 99px;
+      margin-bottom: 1.5rem;
+      animation: fadeUp 0.6s ease both;
+    }
+
+    h1 {
+      font-family: 'Lora', serif;
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 600;
+      line-height: 1.2;
+      color: var(--ink);
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+      animation: fadeUp 0.6s 0.1s ease both;
+    }
+
+    h1 em {
+      font-style: italic;
+      color: var(--rust);
+    }
+
+    .hero-sub {
+      font-size: 1rem;
+      color: var(--ink-light);
+      font-weight: 300;
+      max-width: 480px;
+      margin: 0 auto 2.5rem;
+      animation: fadeUp 0.6s 0.2s ease both;
+    }
+
+    /* ── SEARCH BOX ── */
+    .search-card {
+      background: var(--warm-white);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      box-shadow: var(--shadow-lg);
+      animation: fadeUp 0.6s 0.3s ease both;
+    }
+
+    .search-row {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    .search-input-wrap {
+      flex: 1;
+      position: relative;
+    }
+
+    .search-input-wrap svg {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--ink-muted);
+      width: 18px;
+      height: 18px;
+    }
+
+    #topicInput {
+      width: 100%;
+      padding: 0.85rem 1rem 0.85rem 2.75rem;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      color: var(--ink);
+      background: var(--cream);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    #topicInput:focus {
+      border-color: var(--rust-light);
+      box-shadow: 0 0 0 3px rgba(192,82,42,0.08);
+    }
+
+    #topicInput::placeholder { color: var(--ink-muted); }
+
+    .btn-analyze {
+      padding: 0.85rem 1.5rem;
+      background: var(--ink);
+      color: var(--cream);
+      border: none;
+      border-radius: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-analyze:hover { background: var(--rust); transform: translateY(-1px); }
+    .btn-analyze:active { transform: translateY(0); }
+    .btn-analyze:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .example-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 1rem;
+      justify-content: center;
+    }
+
+    .chip {
+      font-size: 0.75rem;
+      color: var(--ink-muted);
+      background: var(--cream);
+      border: 1px solid var(--border);
+      padding: 0.3rem 0.75rem;
+      border-radius: 99px;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-weight: 400;
+    }
+
+    .chip:hover { border-color: var(--rust-light); color: var(--rust); background: var(--rust-pale); }
+
+    /* ── LOADING ── */
+    #loadingState {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      padding: 4rem 2rem;
+      gap: 1.5rem;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    .loader-ring {
+      width: 48px;
+      height: 48px;
+      border: 3px solid var(--border);
+      border-top-color: var(--rust);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    .loading-text {
+      font-family: 'Lora', serif;
+      font-style: italic;
+      color: var(--ink-light);
+      font-size: 1rem;
+    }
+
+    .loading-subtext {
+      font-size: 0.8rem;
+      color: var(--ink-muted);
+      margin-top: -1rem;
+    }
+
+    /* ── RESULTS ── */
+    #resultsSection {
+      display: none;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 2rem 5rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .results-header {
+      text-align: center;
+      padding: 1rem 0 2.5rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 2.5rem;
+    }
+
+    .results-header h2 {
+      font-family: 'Lora', serif;
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 0.4rem;
+    }
+
+    .results-meta {
+      font-size: 0.82rem;
+      color: var(--ink-muted);
+    }
+
+    .results-meta span {
+      color: var(--rust);
+      font-weight: 500;
+    }
+
+    /* Stats row */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .stat-card {
+      background: var(--warm-white);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      text-align: center;
+      animation: fadeUp 0.5s ease both;
+    }
+
+    .stat-number {
+      font-family: 'Lora', serif;
+      font-size: 2rem;
+      font-weight: 600;
+      color: var(--ink);
+      line-height: 1;
+      margin-bottom: 0.35rem;
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--ink-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    /* Section headings */
+    .section-title {
+      font-family: 'Lora', serif;
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .section-title .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--rust);
+      flex-shrink: 0;
+    }
+
+    /* Gap cards */
+    .gaps-grid {
+      display: grid;
+      gap: 1rem;
+      margin-bottom: 3rem;
+    }
+
+    .gap-card {
+      background: var(--warm-white);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--rust);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      animation: fadeUp 0.5s ease both;
+      transition: box-shadow 0.2s;
+    }
+
+    .gap-card:hover { box-shadow: var(--shadow); }
+
+    .gap-card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .gap-keywords {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+
+    .kw-tag {
+      font-size: 0.75rem;
+      background: var(--rust-pale);
+      color: var(--rust);
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      font-weight: 500;
+    }
+
+    .gap-score-badge {
+      background: var(--ink);
+      color: var(--cream);
+      font-size: 0.7rem;
+      font-weight: 500;
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .gap-paper-count {
+      font-size: 0.8rem;
+      color: var(--ink-muted);
+      margin-bottom: 0.75rem;
+    }
+
+    .gap-sample-papers {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .sample-paper-link {
+      font-size: 0.8rem;
+      color: var(--ink-light);
+      text-decoration: none;
+      display: flex;
+      align-items: baseline;
+      gap: 0.4rem;
+      transition: color 0.15s;
+    }
+
+    .sample-paper-link::before {
+      content: '→';
+      color: var(--rust-light);
+      flex-shrink: 0;
+    }
+
+    .sample-paper-link:hover { color: var(--rust); }
+
+    /* Cluster grid */
+    .clusters-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1rem;
+      margin-bottom: 3rem;
+    }
+
+    .cluster-card {
+      background: var(--warm-white);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      animation: fadeUp 0.5s ease both;
+      transition: box-shadow 0.2s;
+    }
+
+    .cluster-card:hover { box-shadow: var(--shadow); }
+
+    .cluster-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.75rem;
+    }
+
+    .cluster-index {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--sage-pale);
+      color: var(--sage);
+      font-size: 0.75rem;
+      font-weight: 500;
+      display: grid;
+      place-items: center;
+    }
+
+    .cluster-count {
+      font-size: 0.75rem;
+      color: var(--ink-muted);
+    }
+
+    .cluster-keywords {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .cluster-kw {
+      font-size: 0.72rem;
+      background: var(--cream);
+      border: 1px solid var(--border);
+      color: var(--ink-light);
+      padding: 0.2rem 0.5rem;
+      border-radius: 5px;
+    }
+
+    .cluster-bar-wrap {
+      background: var(--cream);
+      border-radius: 4px;
+      height: 4px;
+      overflow: hidden;
+      margin-top: 0.5rem;
+    }
+
+    .cluster-bar {
+      height: 100%;
+      background: var(--sage);
+      border-radius: 4px;
+      transition: width 1s ease;
+    }
+
+    /* Error */
+    #errorState {
+      display: none;
+      max-width: 480px;
+      margin: 3rem auto;
+      text-align: center;
+      padding: 0 2rem;
+    }
+
+    .error-card {
+      background: var(--warm-white);
+      border: 1px solid #e8c5b8;
+      border-radius: 12px;
+      padding: 2rem;
+    }
+
+    .error-card p {
+      color: var(--ink-light);
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+    }
+
+    .error-title {
+      font-family: 'Lora', serif;
+      font-size: 1.1rem;
+      color: var(--rust);
+      font-weight: 600;
+    }
+
+    /* Footer note */
+    .footnote {
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--ink-muted);
+      padding: 2rem;
+      border-top: 1px solid var(--border);
+      margin-top: 2rem;
+    }
+
+    .footnote a { color: var(--rust); text-decoration: none; }
+    .footnote a:hover { text-decoration: underline; }
+
+    /* Animations */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      header { padding: 1.25rem; }
+      .hero { padding: 3rem 1.25rem 2rem; }
+      .search-row { flex-direction: column; }
+      .btn-analyze { width: 100%; justify-content: center; }
+      .stats-row { grid-template-columns: 1fr; }
+      #resultsSection { padding: 0 1.25rem 4rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a class="logo" href="#">
+      <div class="logo-mark"></div>
+      <div>
+        <div class="logo-text">ResearchRadar</div>
+        <div class="logo-tagline">Literature gap detection</div>
+      </div>
+    </a>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <span class="hero-eyebrow">Powered by arXiv + Sentence Transformers</span>
+    <h1>Find what hasn't<br/>been <em>researched yet</em></h1>
+    <p class="hero-sub">Enter a research topic. We fetch recent papers, cluster them semantically, and surface the under-explored corners of the field.</p>
+
+    <div class="search-card">
+      <div class="search-row">
+        <div class="search-input-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input id="topicInput" type="text" placeholder="e.g. federated learning in healthcare" autocomplete="off"/>
+        </div>
+        <button class="btn-analyze" id="analyzeBtn" onclick="analyze()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+          Analyze
+        </button>
+      </div>
+      <div class="example-chips">
+        <span class="chip" onclick="setTopic('federated learning privacy')">Federated learning</span>
+        <span class="chip" onclick="setTopic('large language model hallucination')">LLM hallucination</span>
+        <span class="chip" onclick="setTopic('graph neural network drug discovery')">Drug discovery</span>
+        <span class="chip" onclick="setTopic('climate change machine learning')">Climate + ML</span>
+        <span class="chip" onclick="setTopic('multimodal emotion recognition')">Emotion recognition</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- LOADING -->
+  <div id="loadingState">
+    <div class="loader-ring"></div>
+    <p class="loading-text">Scanning the literature…</p>
+    <p class="loading-subtext">Fetching papers from arXiv, embedding abstracts, detecting gaps</p>
+  </div>
+
+  <!-- ERROR -->
+  <div id="errorState">
+    <div class="error-card">
+      <div class="error-title">Something went wrong</div>
+      <p id="errorMsg">Could not analyze this topic. Please try again.</p>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <section id="resultsSection">
+    <div class="results-header">
+      <h2 id="resultsTitle">Analysis complete</h2>
+      <p class="results-meta" id="resultsMeta"></p>
+    </div>
+
+    <div class="stats-row" id="statsRow"></div>
+
+    <div class="section-title"><span class="dot"></span>Under-explored areas</div>
+    <div class="gaps-grid" id="gapsGrid"></div>
+
+    <div class="section-title"><span class="dot" style="background:var(--sage)"></span>Research clusters found</div>
+    <div class="clusters-grid" id="clustersGrid"></div>
+  </section>
+
+  <footer class="footnote">
+    Built with arXiv API · Sentence Transformers · Flask &nbsp;·&nbsp;
+    <a href="https://github.com/Manangupta71/research-radar" target="_blank">View on GitHub</a>
+  </footer>
+
+  <script>
+    const API = 'http://localhost:5000';
+
+    function setTopic(t) {
+      document.getElementById('topicInput').value = t;
+      document.getElementById('topicInput').focus();
+    }
+
+    document.getElementById('topicInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') analyze();
+    });
+
+    function show(id) {
+      ['loadingState','resultsSection','errorState'].forEach(s => {
+        document.getElementById(s).style.display = 'none';
+      });
+      const el = document.getElementById(id);
+      if (id === 'loadingState') el.style.display = 'flex';
+      else el.style.display = 'block';
+    }
+
+    async function analyze() {
+      const topic = document.getElementById('topicInput').value.trim();
+      if (!topic) return;
+
+      const btn = document.getElementById('analyzeBtn');
+      btn.disabled = true;
+      show('loadingState');
+
+      try {
+        const res = await fetch(`${API}/analyze`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ topic })
+        });
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data.error || 'Unknown error');
+
+        renderResults(data);
+        show('resultsSection');
+        document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } catch (err) {
+        document.getElementById('errorMsg').textContent = err.message;
+        show('errorState');
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    function renderResults(data) {
+      // Header
+      document.getElementById('resultsTitle').textContent = `"${data.topic}"`;
+      document.getElementById('resultsMeta').innerHTML =
+        `Analyzed <span>${data.total_papers} papers</span> · Found <span>${data.clusters.length} clusters</span> · <span>${data.gaps.length} potential gaps</span>`;
+
+      // Stats
+      const statsRow = document.getElementById('statsRow');
+      statsRow.innerHTML = [
+        { n: data.total_papers, label: 'Papers analyzed' },
+        { n: data.clusters.length, label: 'Research clusters' },
+        { n: data.gaps.length, label: 'Gaps detected' }
+      ].map((s, i) => `
+        <div class="stat-card" style="animation-delay:${i*0.1}s">
+          <div class="stat-number">${s.n}</div>
+          <div class="stat-label">${s.label}</div>
+        </div>
+      `).join('');
+
+      // Gaps
+      const gapsGrid = document.getElementById('gapsGrid');
+      if (data.gaps.length === 0) {
+        gapsGrid.innerHTML = `<p style="color:var(--ink-muted);font-size:0.9rem">No significant gaps detected — this topic appears evenly covered.</p>`;
+      } else {
+        gapsGrid.innerHTML = data.gaps.map((gap, i) => `
+          <div class="gap-card" style="animation-delay:${i*0.08}s">
+            <div class="gap-card-top">
+              <div class="gap-keywords">
+                ${gap.keywords.map(k => `<span class="kw-tag">${k}</span>`).join('')}
+              </div>
+              <span class="gap-score-badge">gap score ${gap.gap_score}</span>
+            </div>
+            <div class="gap-paper-count">Only ${gap.paper_count} paper${gap.paper_count !== 1 ? 's' : ''} in this area — likely under-researched</div>
+            <div class="gap-sample-papers">
+              ${gap.sample_papers.map(p => `
+                <a href="${p.url}" target="_blank" class="sample-paper-link">${p.title}</a>
+              `).join('')}
+            </div>
+          </div>
+        `).join('');
+      }
+
+      // Clusters
+      const maxSize = Math.max(...data.clusters.map(c => c.size));
+      const clustersGrid = document.getElementById('clustersGrid');
+      clustersGrid.innerHTML = data.clusters.map((c, i) => `
+        <div class="cluster-card" style="animation-delay:${i*0.07}s">
+          <div class="cluster-header">
+            <span class="cluster-index">${i + 1}</span>
+            <span class="cluster-count">${c.size} paper${c.size !== 1 ? 's' : ''}</span>
+          </div>
+          <div class="cluster-keywords">
+            ${c.keywords.slice(0, 4).map(k => `<span class="cluster-kw">${k}</span>`).join('')}
+          </div>
+          <div class="cluster-bar-wrap">
+            <div class="cluster-bar" style="width:${Math.round((c.size/maxSize)*100)}%"></div>
+          </div>
+        </div>
+      `).join('');
+    }
+  </script>
+</body>
+</html>
